@@ -3,7 +3,7 @@ name = "codecrafters-interpreter"
 version = "0.1.0"
 authors = ["Codecrafters <hello@codecrafters.io>"]
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.76"
 
 [dependencies]
 anyhow = "1.0.68"                                # error handling
