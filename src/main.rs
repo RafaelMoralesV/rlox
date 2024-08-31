@@ -4,20 +4,23 @@ mod token;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
+use std::process::ExitCode;
 
 use lexer::AnalisisError;
 
 use crate::lexer::Lexer;
 
-fn main() {
+fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 {
         writeln!(io::stderr(), "Usage: {} tokenize <filename>", args[0]).unwrap();
-        return;
+        return ExitCode::SUCCESS;
     }
 
     let command = &args[1];
     let filename = &args[2];
+
+    let mut errors_found = false;
 
     match command.as_str() {
         "tokenize" => {
@@ -31,11 +34,14 @@ fn main() {
                 for token in Lexer::new(&file_contents) {
                     match token {
                         Ok(token) => println!("{token}"),
-                        Err(e) => match e {
-                            AnalisisError::UnrecognizedCharacter(c) => {
-                                eprintln!("[line 1] Error: Unexpected Character {c}")
+                        Err(e) => {
+                            errors_found = true;
+                            match e {
+                                AnalisisError::UnrecognizedCharacter(c) => {
+                                    eprintln!("[line 1] Error: Unexpected Character {c}")
+                                }
                             }
-                        },
+                        }
                     }
                 }
             } else {
@@ -44,7 +50,13 @@ fn main() {
         }
         _ => {
             writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
-            return;
+            return ExitCode::FAILURE;
         }
+    }
+
+    if errors_found {
+        return ExitCode::from(65);
+    } else {
+        return ExitCode::SUCCESS;
     }
 }
