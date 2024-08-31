@@ -38,7 +38,7 @@ fn main() -> ExitCode {
                             errors_found = true;
                             match e {
                                 AnalisisError::UnrecognizedCharacter(c) => {
-                                    eprintln!("[line 1] Error: Unexpected Character {c}")
+                                    eprintln!("[line 1] Error: Unexpected character: {c}")
                                 }
                             }
                         }
