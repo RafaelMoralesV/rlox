@@ -25,6 +25,8 @@ impl<'a> Iterator for Lexer<'a> {
         match c {
             Some('(') => Some(Token::LeftParenthesis),
             Some(')') => Some(Token::RightParenthesis),
+            Some('{') => Some(Token::LeftBracket),
+            Some('}') => Some(Token::RightBracket),
             Some(_) => None,
             None => None,
         }
@@ -42,6 +44,19 @@ mod tests {
         assert_eq!(Some(Token::LeftParenthesis), lexer.next());
         assert_eq!(Some(Token::LeftParenthesis), lexer.next());
         assert_eq!(Some(Token::RightParenthesis), lexer.next());
+        assert_eq!(Some(Token::EndOfFile), lexer.next());
+        assert_eq!(None, lexer.next());
+    }
+
+    #[test]
+    fn parses_brackets() {
+        let mut lexer = Lexer::new("{{}}");
+
+        assert_eq!(Some(Token::LeftBracket), lexer.next());
+        assert_eq!(Some(Token::LeftBracket), lexer.next());
+        assert_eq!(Some(Token::RightBracket), lexer.next());
+        assert_eq!(Some(Token::RightBracket), lexer.next());
+
         assert_eq!(Some(Token::EndOfFile), lexer.next());
         assert_eq!(None, lexer.next());
     }
