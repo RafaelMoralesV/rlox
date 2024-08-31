@@ -29,7 +29,6 @@ fn main() {
                 for token in Lexer::new(&file_contents) {
                     println!("{token}");
                 }
-                println!("EOF  null");
             } else {
                 println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
             }
