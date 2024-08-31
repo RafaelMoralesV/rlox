@@ -5,6 +5,8 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 
+use lexer::AnalisisError;
+
 use crate::lexer::Lexer;
 
 fn main() {
@@ -27,7 +29,14 @@ fn main() {
             // Uncomment this block to pass the first stage
             if !file_contents.is_empty() {
                 for token in Lexer::new(&file_contents) {
-                    println!("{token}");
+                    match token {
+                        Ok(token) => println!("{token}"),
+                        Err(e) => match e {
+                            AnalisisError::UnrecognizedCharacter(c) => {
+                                eprintln!("[line 1] Error: Unexpected Character {c}")
+                            }
+                        },
+                    }
                 }
             } else {
                 println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
