@@ -18,7 +18,7 @@ impl<'a> Iterator for Lexer<'a> {
         let c = self.input.chars().nth(self.index);
         self.index += 1;
 
-        if self.index == self.input.len() {
+        if self.index == self.input.len() + 1 {
             return Some(Token::EndOfFile);
         }
 
@@ -28,5 +28,21 @@ impl<'a> Iterator for Lexer<'a> {
             Some(_) => None,
             None => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_parenthesis() {
+        let mut lexer = Lexer::new("(()");
+
+        assert_eq!(Some(Token::LeftParenthesis), lexer.next());
+        assert_eq!(Some(Token::LeftParenthesis), lexer.next());
+        assert_eq!(Some(Token::RightParenthesis), lexer.next());
+        assert_eq!(Some(Token::EndOfFile), lexer.next());
+        assert_eq!(None, lexer.next());
     }
 }

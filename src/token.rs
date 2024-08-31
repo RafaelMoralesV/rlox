@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[derive(Debug, PartialEq)]
 pub enum Token {
     LeftParenthesis,
     RightParenthesis,
