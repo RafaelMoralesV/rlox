@@ -3,17 +3,22 @@ use crate::token::Token;
 pub struct Lexer<'a> {
     input: &'a str,
     index: usize,
+    line: usize,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
-        Lexer { input, index: 0 }
+        Lexer {
+            input,
+            index: 0,
+            line: 1,
+        }
     }
 }
 
 #[derive(Debug, PartialEq)]
 pub enum AnalisisError {
-    UnrecognizedCharacter(char),
+    UnrecognizedCharacter(usize, char),
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -38,7 +43,12 @@ impl<'a> Iterator for Lexer<'a> {
             Some('+') => Some(Ok(Token::Plus)),
             Some('-') => Some(Ok(Token::Minus)),
             Some(';') => Some(Ok(Token::SemiColon)),
-            Some(c) => Some(Err(AnalisisError::UnrecognizedCharacter(c))),
+            Some('\n') => {
+                self.line += 1;
+                self.next()
+            }
+            Some(c) if c.is_whitespace() => self.next(),
+            Some(c) => Some(Err(AnalisisError::UnrecognizedCharacter(self.line, c))),
             None => None,
         }
     }
@@ -94,12 +104,12 @@ mod tests {
         assert_eq!(Some(Ok(Token::Comma)), lexer.next());
         assert_eq!(Some(Ok(Token::Dot)), lexer.next());
         assert_eq!(
-            Some(Err(AnalisisError::UnrecognizedCharacter('$'))),
+            Some(Err(AnalisisError::UnrecognizedCharacter(1, '$'))),
             lexer.next()
         );
         assert_eq!(Some(Ok(Token::LeftParenthesis)), lexer.next());
         assert_eq!(
-            Some(Err(AnalisisError::UnrecognizedCharacter('#'))),
+            Some(Err(AnalisisError::UnrecognizedCharacter(1, '#'))),
             lexer.next()
         );
 

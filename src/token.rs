@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
+    // Singe Character Tokens
     LeftParenthesis,
     RightParenthesis,
     LeftBracket,
@@ -12,6 +13,12 @@ pub enum Token {
     SemiColon,
     Plus,
     Minus,
+
+    // One or Two Character Tokens
+
+    // Literals
+
+    // Keywords
     EndOfFile,
 }
 
