@@ -25,6 +25,8 @@ impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, AnalisisError>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        let len = self.input.chars().count();
+
         loop {
             if let Some(c) = self.input.chars().nth(self.index) {
                 let initial_index = self.index;
@@ -75,14 +77,7 @@ impl<'a> Iterator for Lexer<'a> {
                                 self.index += 1;
                                 match self.input.chars().nth(self.index) {
                                     Some('\n') => break,
-                                    None => {
-                                        return Some(Ok(Token::new(
-                                            TokenType::EndOfFile,
-                                            "",
-                                            Literal::Null,
-                                            self.line,
-                                        )))
-                                    }
+                                    None => break,
                                     _ => continue,
                                 }
                             }
@@ -107,7 +102,7 @@ impl<'a> Iterator for Lexer<'a> {
 
                 return Some(Ok(token));
             } else {
-                if self.index == self.input.len() {
+                if self.index == len {
                     self.index += 1;
 
                     return Some(Ok(Token::new(
