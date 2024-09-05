@@ -21,6 +21,18 @@ pub enum AnalisisError {
     UnrecognizedCharacter(usize, char),
 }
 
+impl<'a> Lexer<'a> {
+    fn either(&mut self, target: char, is: TokenType, isnt: TokenType) -> TokenType {
+        match self.input.chars().nth(self.index) {
+            Some(c) if c == target => {
+                self.index += 1;
+                is
+            }
+            _ => isnt,
+        }
+    }
+}
+
 impl<'a> Iterator for Lexer<'a> {
     type Item = Result<Token<'a>, AnalisisError>;
 
@@ -43,34 +55,10 @@ impl<'a> Iterator for Lexer<'a> {
                     '+' => TokenType::Plus,
                     '-' => TokenType::Minus,
                     ';' => TokenType::SemiColon,
-                    '!' => match self.input.chars().nth(self.index) {
-                        Some('=') => {
-                            self.index += 1;
-                            TokenType::BangEqual
-                        }
-                        _ => TokenType::Bang,
-                    },
-                    '=' => match self.input.chars().nth(self.index) {
-                        Some('=') => {
-                            self.index += 1;
-                            TokenType::EqualEqual
-                        }
-                        _ => TokenType::Equal,
-                    },
-                    '>' => match self.input.chars().nth(self.index) {
-                        Some('=') => {
-                            self.index += 1;
-                            TokenType::GreaterEqual
-                        }
-                        _ => TokenType::Greater,
-                    },
-                    '<' => match self.input.chars().nth(self.index) {
-                        Some('=') => {
-                            self.index += 1;
-                            TokenType::LessEqual
-                        }
-                        _ => TokenType::Less,
-                    },
+                    '!' => self.either('=', TokenType::BangEqual, TokenType::Bang),
+                    '=' => self.either('=', TokenType::EqualEqual, TokenType::Equal),
+                    '>' => self.either('=', TokenType::GreaterEqual, TokenType::Greater),
+                    '<' => self.either('=', TokenType::LessEqual, TokenType::Less),
                     '/' => match self.input.chars().nth(self.index) {
                         Some('/') => {
                             loop {
