@@ -75,7 +75,14 @@ impl<'a> Iterator for Lexer<'a> {
                                 self.index += 1;
                                 match self.input.chars().nth(self.index) {
                                     Some('\n') => break,
-                                    None => break,
+                                    None => {
+                                        return Some(Ok(Token::new(
+                                            TokenType::EndOfFile,
+                                            "",
+                                            Literal::Null,
+                                            self.line,
+                                        )))
+                                    }
                                     _ => continue,
                                 }
                             }
