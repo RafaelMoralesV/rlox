@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 #[derive(Debug, PartialEq)]
-pub enum Token {
+pub enum TokenType {
     // Singe Character Tokens
     LeftParenthesis,
     RightParenthesis,
@@ -22,23 +22,64 @@ pub enum Token {
     EndOfFile,
 }
 
-impl Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self {
-            Token::LeftParenthesis => write!(f, "LEFT_PAREN ( null"),
-            Token::RightParenthesis => write!(f, "RIGHT_PAREN ) null"),
+pub struct Token<'a> {
+    pub token_type: TokenType,
+    lexeme: &'a str,
+    literal: Literal,
+    line: usize,
+}
 
-            Token::LeftBracket => write!(f, "LEFT_BRACE {{ null"),
-            Token::RightBracket => write!(f, "RIGHT_BRACE }} null"),
+pub enum Literal {
+    Null,
+}
 
-            Token::Asterisk => write!(f, "STAR * null"),
-            Token::Dot => write!(f, "DOT . null"),
-            Token::Comma => write!(f, "COMMA , null"),
-            Token::SemiColon => write!(f, "SEMICOLON ; null"),
-            Token::Plus => write!(f, "PLUS + null"),
-            Token::Minus => write!(f, "MINUS - null"),
-
-            Token::EndOfFile => write!(f, "EOF  null"),
+impl<'a> Token<'a> {
+    pub fn new(token_type: TokenType, lexeme: &'a str, literal: Literal, line: usize) -> Self {
+        Self {
+            token_type,
+            lexeme,
+            literal,
+            line,
         }
+    }
+}
+
+impl Display for Token<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {} {}", self.token_type, self.lexeme, self.literal)
+    }
+}
+
+impl Display for Literal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match &self {
+                Literal::Null => "null",
+            }
+        )
+    }
+}
+
+impl Display for TokenType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match &self {
+                TokenType::LeftParenthesis => "LEFT_PAREN",
+                TokenType::RightParenthesis => "RIGHT_PAREN",
+                TokenType::LeftBracket => "LEFT_BRACE",
+                TokenType::RightBracket => "RIGHT_BRACE",
+                TokenType::Asterisk => "STAR",
+                TokenType::Dot => "DOT",
+                TokenType::Comma => "COMMA",
+                TokenType::SemiColon => "SEMICOLON",
+                TokenType::Plus => "PLUS",
+                TokenType::Minus => "MINUS",
+                TokenType::EndOfFile => "EOF",
+            }
+        )
     }
 }
