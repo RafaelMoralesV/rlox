@@ -26,6 +26,7 @@ pub enum TokenType {
     LessEqual,
 
     // Literals
+    String,
 
     // Keywords
     EndOfFile,
@@ -34,16 +35,17 @@ pub enum TokenType {
 pub struct Token<'a> {
     pub token_type: TokenType,
     lexeme: &'a str,
-    literal: Literal,
+    literal: Literal<'a>,
     line: usize,
 }
 
-pub enum Literal {
+pub enum Literal<'a> {
     Null,
+    String(&'a str),
 }
 
 impl<'a> Token<'a> {
-    pub fn new(token_type: TokenType, lexeme: &'a str, literal: Literal, line: usize) -> Self {
+    pub fn new(token_type: TokenType, lexeme: &'a str, literal: Literal<'a>, line: usize) -> Self {
         Self {
             token_type,
             lexeme,
@@ -59,13 +61,14 @@ impl Display for Token<'_> {
     }
 }
 
-impl Display for Literal {
+impl Display for Literal<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
             match &self {
                 Literal::Null => "null",
+                Literal::String(s) => s,
             }
         )
     }
@@ -96,6 +99,7 @@ impl Display for TokenType {
                 TokenType::GreaterEqual => "GREATER_EQUAL",
                 TokenType::Less => "LESS",
                 TokenType::LessEqual => "LESS_EQUAL",
+                TokenType::String => "STRING",
 
                 TokenType::EndOfFile => "EOF",
             }

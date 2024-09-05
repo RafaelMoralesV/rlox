@@ -19,6 +19,7 @@ impl<'a> Lexer<'a> {
 #[derive(Debug, PartialEq)]
 pub enum AnalisisError {
     UnrecognizedCharacter(usize, char),
+    UnterminatedString(usize),
 }
 
 impl<'a> Lexer<'a> {
@@ -72,6 +73,30 @@ impl<'a> Iterator for Lexer<'a> {
                             continue;
                         }
                         _ => TokenType::Slash,
+                    },
+                    '"' => loop {
+                        self.index += 1;
+
+                        match self.input.chars().nth(self.index - 1) {
+                            Some(c) if c == '"' => {
+                                return Some(Ok(Token::new(
+                                    TokenType::String,
+                                    &self.input[initial_index..self.index],
+                                    Literal::String(
+                                        &self.input[(initial_index + 1)..(self.index - 1)],
+                                    ),
+                                    self.line,
+                                )))
+                            }
+                            Some(c) if c == '\n' => {
+                                self.line += 1;
+                            }
+                            Some(_) => continue,
+                            None => {
+                                self.index -= 1;
+                                return Some(Err(AnalisisError::UnterminatedString(self.line)));
+                            }
+                        };
                     },
                     '\n' => {
                         self.line += 1;

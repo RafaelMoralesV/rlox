@@ -40,6 +40,9 @@ fn main() -> ExitCode {
                                 AnalisisError::UnrecognizedCharacter(line, c) => {
                                     eprintln!("[line {line}] Error: Unexpected character: {c}")
                                 }
+                                AnalisisError::UnterminatedString(line) => {
+                                    eprintln!("[line {line}] Error: Unterminated string.")
+                                }
                             }
                         }
                     }
