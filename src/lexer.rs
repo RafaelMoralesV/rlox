@@ -26,6 +26,7 @@ impl<'a> Iterator for Lexer<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(c) = self.input.chars().nth(self.index) {
+            let initial_index = self.index;
             self.index += 1;
 
             let token_type: TokenType = match c {
@@ -39,12 +40,40 @@ impl<'a> Iterator for Lexer<'a> {
                 '+' => TokenType::Plus,
                 '-' => TokenType::Minus,
                 ';' => TokenType::SemiColon,
+                '!' => match self.input.chars().nth(self.index) {
+                    Some('=') => {
+                        self.index += 1;
+                        TokenType::BangEqual
+                    }
+                    _ => TokenType::Bang,
+                },
+                '=' => match self.input.chars().nth(self.index) {
+                    Some('=') => {
+                        self.index += 1;
+                        TokenType::EqualEqual
+                    }
+                    _ => TokenType::Equal,
+                },
+                '>' => match self.input.chars().nth(self.index) {
+                    Some('=') => {
+                        self.index += 1;
+                        TokenType::GreaterEqual
+                    }
+                    _ => TokenType::Greater,
+                },
+                '<' => match self.input.chars().nth(self.index) {
+                    Some('=') => {
+                        self.index += 1;
+                        TokenType::LessEqual
+                    }
+                    _ => TokenType::Less,
+                },
                 c => return Some(Err(AnalisisError::UnrecognizedCharacter(self.line, c))),
             };
 
             let token = Token::new(
                 token_type,
-                &self.input[(self.index - 1)..self.index],
+                &self.input[initial_index..self.index],
                 Literal::Null,
                 self.line,
             );
