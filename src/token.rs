@@ -13,6 +13,7 @@ pub enum TokenType {
     SemiColon,
     Plus,
     Minus,
+    Slash,
 
     // One or Two Character Tokens
     Bang,
@@ -86,7 +87,7 @@ impl Display for TokenType {
                 TokenType::SemiColon => "SEMICOLON",
                 TokenType::Plus => "PLUS",
                 TokenType::Minus => "MINUS",
-                TokenType::EndOfFile => "EOF",
+                TokenType::Slash => "SLASH",
                 TokenType::Bang => "BANG",
                 TokenType::BangEqual => "BANG_EQUAL",
                 TokenType::Equal => "EQUAL",
@@ -95,6 +96,8 @@ impl Display for TokenType {
                 TokenType::GreaterEqual => "GREATER_EQUAL",
                 TokenType::Less => "LESS",
                 TokenType::LessEqual => "LESS_EQUAL",
+
+                TokenType::EndOfFile => "EOF",
             }
         )
     }

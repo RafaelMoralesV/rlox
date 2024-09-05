@@ -69,6 +69,20 @@ impl<'a> Iterator for Lexer<'a> {
                         }
                         _ => TokenType::Less,
                     },
+                    '/' => match self.input.chars().nth(self.index) {
+                        Some('/') => {
+                            loop {
+                                self.index += 1;
+                                match self.input.chars().nth(self.index) {
+                                    Some('\n') => break,
+                                    None => break,
+                                    _ => continue,
+                                }
+                            }
+                            continue;
+                        }
+                        _ => TokenType::Slash,
+                    },
                     '\n' => {
                         self.line += 1;
                         continue;
