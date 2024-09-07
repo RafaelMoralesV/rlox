@@ -93,6 +93,26 @@ impl<'a> Lexer<'a> {
             }
         }
     }
+
+    fn identifier(&mut self, initial_index: usize) -> Token<'a> {
+        loop {
+            self.index += 1;
+
+            match self.input.chars().nth(self.index - 1) {
+                Some(c) if c.is_alphanumeric() || c == '_' => continue,
+                _ => break,
+            }
+        }
+
+        self.index -= 1;
+
+        Token::new(
+            TokenType::Identifier,
+            &self.input[initial_index..self.index],
+            Literal::Null,
+            self.line,
+        )
+    }
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -107,7 +127,7 @@ impl<'a> Iterator for Lexer<'a> {
                 self.index += 1;
 
                 if c.is_whitespace() {
-                    self.line += c.eq(&'\n') as usize;
+                    self.line += (c == '\n') as usize;
                     continue;
                 }
 
@@ -142,6 +162,9 @@ impl<'a> Iterator for Lexer<'a> {
                     },
                     '"' => return self.string(initial_index),
                     c if c.is_numeric() => return Some(Ok(self.number(initial_index))),
+                    c if c.is_alphabetic() || c == '_' => {
+                        return Some(Ok(self.identifier(initial_index)))
+                    }
                     c => return Some(Err(AnalisisError::UnrecognizedCharacter(self.line, c))),
                 };
 
