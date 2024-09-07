@@ -28,6 +28,7 @@ pub enum TokenType {
     // Literals
     String,
     Number,
+    Identifier,
 
     // Keywords
     EndOfFile,
@@ -46,6 +47,7 @@ pub enum Literal<'a> {
     Null,
     String(&'a str),
     Number(f64),
+    Identifier(&'a str),
 }
 
 impl<'a> Token<'a> {
@@ -71,6 +73,7 @@ impl Display for Literal<'_> {
             Literal::Null => write!(f, "null"),
             Literal::String(s) => write!(f, "{}", s),
             Literal::Number(n) => write!(f, "{n:?}"),
+            Literal::Identifier(i) => write!(f, "{}", i),
         }
     }
 }
@@ -102,7 +105,7 @@ impl Display for TokenType {
                 TokenType::LessEqual => "LESS_EQUAL",
                 TokenType::String => "STRING",
                 TokenType::Number => "NUMBER",
-
+                TokenType::Identifier => "IDENTIFIER",
                 TokenType::EndOfFile => "EOF",
             }
         )

@@ -33,6 +33,31 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn string(&mut self, initial_index: usize) -> Option<Result<Token<'a>, AnalisisError>> {
+        loop {
+            self.index += 1;
+
+            match self.input.chars().nth(self.index - 1) {
+                Some('"') => {
+                    return Some(Ok(Token::new(
+                        TokenType::String,
+                        &self.input[initial_index..self.index],
+                        Literal::String(&self.input[(initial_index + 1)..(self.index - 1)]),
+                        self.line,
+                    )))
+                }
+                Some('\n') => {
+                    self.line += 1;
+                }
+                Some(_) => continue,
+                None => {
+                    self.index -= 1;
+                    return Some(Err(AnalisisError::UnterminatedString(self.line)));
+                }
+            };
+        }
+    }
+
     fn number(&mut self, initial_index: usize) -> Token<'a> {
         let mut has_dot = false;
         let gen_token = |i: usize| {
@@ -81,6 +106,11 @@ impl<'a> Iterator for Lexer<'a> {
                 let initial_index = self.index;
                 self.index += 1;
 
+                if c.is_whitespace() {
+                    self.line += c.eq(&'\n') as usize;
+                    continue;
+                }
+
                 let token_type: TokenType = match c {
                     '(' => TokenType::LeftParenthesis,
                     ')' => TokenType::RightParenthesis,
@@ -110,36 +140,8 @@ impl<'a> Iterator for Lexer<'a> {
                         }
                         _ => TokenType::Slash,
                     },
-                    '"' => loop {
-                        self.index += 1;
-
-                        match self.input.chars().nth(self.index - 1) {
-                            Some('"') => {
-                                return Some(Ok(Token::new(
-                                    TokenType::String,
-                                    &self.input[initial_index..self.index],
-                                    Literal::String(
-                                        &self.input[(initial_index + 1)..(self.index - 1)],
-                                    ),
-                                    self.line,
-                                )))
-                            }
-                            Some('\n') => {
-                                self.line += 1;
-                            }
-                            Some(_) => continue,
-                            None => {
-                                self.index -= 1;
-                                return Some(Err(AnalisisError::UnterminatedString(self.line)));
-                            }
-                        };
-                    },
-                    '\n' => {
-                        self.line += 1;
-                        continue;
-                    }
+                    '"' => return self.string(initial_index),
                     c if c.is_numeric() => return Some(Ok(self.number(initial_index))),
-                    c if c.is_whitespace() => continue,
                     c => return Some(Err(AnalisisError::UnrecognizedCharacter(self.line, c))),
                 };
 
