@@ -3,7 +3,6 @@ mod token;
 
 use std::env;
 use std::fs;
-use std::io::{self, Write};
 use std::process::ExitCode;
 
 use lexer::AnalisisError;
@@ -13,7 +12,7 @@ use crate::lexer::Lexer;
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 {
-        writeln!(io::stderr(), "Usage: {} tokenize <filename>", args[0]).unwrap();
+        eprintln!("Usage: {} tokenize <filename>", args[0]);
         return ExitCode::SUCCESS;
     }
 
@@ -25,7 +24,7 @@ fn main() -> ExitCode {
     match command.as_str() {
         "tokenize" => {
             let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-                writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
+                eprintln!("Failed to read file {}", filename);
                 String::new()
             });
 
@@ -52,14 +51,14 @@ fn main() -> ExitCode {
             }
         }
         _ => {
-            writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
+            eprintln!("Unknown command: {}", command);
             return ExitCode::FAILURE;
         }
     }
 
     if errors_found {
-        return ExitCode::from(65);
+        ExitCode::from(65)
     } else {
-        return ExitCode::SUCCESS;
+        ExitCode::SUCCESS
     }
 }

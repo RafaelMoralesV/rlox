@@ -37,6 +37,8 @@ pub struct Token<'a> {
     pub token_type: TokenType,
     lexeme: &'a str,
     literal: Literal<'a>,
+
+    #[allow(dead_code)]
     line: usize,
 }
 

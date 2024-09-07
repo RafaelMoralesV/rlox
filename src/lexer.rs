@@ -114,7 +114,7 @@ impl<'a> Iterator for Lexer<'a> {
                         self.index += 1;
 
                         match self.input.chars().nth(self.index - 1) {
-                            Some(c) if c == '"' => {
+                            Some('"') => {
                                 return Some(Ok(Token::new(
                                     TokenType::String,
                                     &self.input[initial_index..self.index],
@@ -124,7 +124,7 @@ impl<'a> Iterator for Lexer<'a> {
                                     self.line,
                                 )))
                             }
-                            Some(c) if c == '\n' => {
+                            Some('\n') => {
                                 self.line += 1;
                             }
                             Some(_) => continue,
