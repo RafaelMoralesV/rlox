@@ -1,17 +1,40 @@
+use std::collections::HashMap;
+
 use crate::token::{Literal, Token, TokenType};
 
 pub struct Lexer<'a> {
     pub input: &'a str,
     pub index: usize,
     pub line: usize,
+    pub reserved_words: HashMap<&'a str, TokenType>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
+        let reserved_words = HashMap::from([
+            ("and", TokenType::And),
+            ("class", TokenType::Class),
+            ("else", TokenType::Else),
+            ("false", TokenType::False),
+            ("for", TokenType::For),
+            ("fun", TokenType::Fun),
+            ("if", TokenType::If),
+            ("nil", TokenType::Nil),
+            ("or", TokenType::Or),
+            ("print", TokenType::Print),
+            ("return", TokenType::Return),
+            ("super", TokenType::Super),
+            ("this", TokenType::This),
+            ("true", TokenType::True),
+            ("var", TokenType::Var),
+            ("while", TokenType::While),
+        ]);
+
         Lexer {
             input,
             index: 0,
             line: 1,
+            reserved_words,
         }
     }
 }
@@ -105,13 +128,14 @@ impl<'a> Lexer<'a> {
         }
 
         self.index -= 1;
+        let slice = &self.input[initial_index..self.index];
 
-        Token::new(
-            TokenType::Identifier,
-            &self.input[initial_index..self.index],
-            Literal::Null,
-            self.line,
-        )
+        let token_type = self
+            .reserved_words
+            .get(slice)
+            .unwrap_or(&TokenType::Identifier);
+
+        Token::new(token_type.clone(), slice, Literal::Null, self.line)
     }
 }
 
