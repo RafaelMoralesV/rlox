@@ -27,6 +27,7 @@ pub enum TokenType {
 
     // Literals
     String,
+    Number,
 
     // Keywords
     EndOfFile,
@@ -42,6 +43,7 @@ pub struct Token<'a> {
 pub enum Literal<'a> {
     Null,
     String(&'a str),
+    Number(f64),
 }
 
 impl<'a> Token<'a> {
@@ -63,14 +65,11 @@ impl Display for Token<'_> {
 
 impl Display for Literal<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match &self {
-                Literal::Null => "null",
-                Literal::String(s) => s,
-            }
-        )
+        match &self {
+            Literal::Null => write!(f, "null"),
+            Literal::String(s) => write!(f, "{}", s),
+            Literal::Number(n) => write!(f, "{n:?}"),
+        }
     }
 }
 
@@ -100,6 +99,7 @@ impl Display for TokenType {
                 TokenType::Less => "LESS",
                 TokenType::LessEqual => "LESS_EQUAL",
                 TokenType::String => "STRING",
+                TokenType::Number => "NUMBER",
 
                 TokenType::EndOfFile => "EOF",
             }

@@ -32,6 +32,42 @@ impl<'a> Lexer<'a> {
             _ => isnt,
         }
     }
+
+    fn number(&mut self, initial_index: usize) -> Token<'a> {
+        let mut has_dot = false;
+        let gen_token = |i: usize| {
+            let slice = &self.input[initial_index..i];
+
+            let number = slice
+                .parse::<f64>()
+                .expect("We know everything before is a number");
+
+            return Token::new(TokenType::Number, slice, Literal::Number(number), self.line);
+        };
+
+        loop {
+            self.index += 1;
+            match self.input.chars().nth(self.index - 1) {
+                Some('.') => {
+                    if !has_dot {
+                        has_dot = true;
+                    } else {
+                        self.index -= 1;
+                        return gen_token(self.index);
+                    }
+                }
+                Some(c) if c.is_numeric() => continue,
+                Some(_) => {
+                    self.index -= 1;
+                    return gen_token(self.index);
+                }
+                None => {
+                    self.index -= 1;
+                    return gen_token(self.index);
+                }
+            }
+        }
+    }
 }
 
 impl<'a> Iterator for Lexer<'a> {
@@ -102,6 +138,7 @@ impl<'a> Iterator for Lexer<'a> {
                         self.line += 1;
                         continue;
                     }
+                    c if c.is_numeric() => return Some(Ok(self.number(initial_index))),
                     c if c.is_whitespace() => continue,
                     c => return Some(Err(AnalisisError::UnrecognizedCharacter(self.line, c))),
                 };
