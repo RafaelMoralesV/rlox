@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::{
     expression::Expr,
     token::{Token, TokenType},
@@ -22,6 +20,14 @@ impl<'a> Parser<'a> {
                 TokenType::True => Expr::Bool(true),
                 TokenType::False => Expr::Bool(false),
                 TokenType::Nil => Expr::Nil,
+                TokenType::Number => Expr::Number(match token.literal {
+                    crate::token::Literal::Number(n) => n,
+                    _ => unreachable!(),
+                }),
+                TokenType::String => Expr::String(match token.literal {
+                    crate::token::Literal::String(s) => s,
+                    _ => unreachable!(),
+                }),
                 TokenType::EndOfFile => return exprs,
                 _ => {
                     exprs.push(Err(ParserError::UnexpectedToken));

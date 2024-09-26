@@ -25,7 +25,7 @@ impl<'a> Display for Expr<'a> {
             Expr::Bool(b) => write!(f, "{b}"),
             Expr::Nil => write!(f, "nil"),
             Expr::Number(n) => write!(f, "{n:?}"),
-            Expr::String(s) => write!(f, "{s:?}"),
+            Expr::String(s) => write!(f, "{s}"),
             Expr::Unary {
                 operator: _,
                 right: _,
