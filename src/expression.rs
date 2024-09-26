@@ -1,12 +1,9 @@
 use std::fmt::Display;
 
-use crate::token::Token;
+use crate::token::{Token, TokenType};
 
 pub enum Expr<'a> {
-    Bool(bool),
-    Nil,
-    Number(f64),
-    String(&'a str),
+    Literal(&'a Token<'a>),
     Unary {
         operator: Token<'a>,
         right: Box<Expr<'a>>,
@@ -22,10 +19,10 @@ pub enum Expr<'a> {
 impl<'a> Display for Expr<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expr::Bool(b) => write!(f, "{b}"),
-            Expr::Nil => write!(f, "nil"),
-            Expr::Number(n) => write!(f, "{n:?}"),
-            Expr::String(s) => write!(f, "{s}"),
+            Expr::Literal(t) => match t.token_type {
+                TokenType::True | TokenType::False | TokenType::Nil => write!(f, "{}", t.lexeme),
+                _ => write!(f, "{}", t.literal),
+            },
             Expr::Unary {
                 operator: _,
                 right: _,

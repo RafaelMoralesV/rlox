@@ -12,22 +12,14 @@ pub enum ParserError {
 }
 
 impl<'a> Parser<'a> {
-    pub fn parse(&mut self) -> Vec<Result<Expr<'a>, ParserError>> {
+    pub fn parse(&'a mut self) -> Vec<Result<Expr<'a>, ParserError>> {
         let mut exprs = Vec::new();
 
         for token in self.tokens.iter() {
+            use TokenType as TT;
+
             let expr = match token.token_type {
-                TokenType::True => Expr::Bool(true),
-                TokenType::False => Expr::Bool(false),
-                TokenType::Nil => Expr::Nil,
-                TokenType::Number => Expr::Number(match token.literal {
-                    crate::token::Literal::Number(n) => n,
-                    _ => unreachable!(),
-                }),
-                TokenType::String => Expr::String(match token.literal {
-                    crate::token::Literal::String(s) => s,
-                    _ => unreachable!(),
-                }),
+                TT::True | TT::False | TT::Nil | TT::Number | TT::String => Expr::Literal(token),
                 TokenType::EndOfFile => return exprs,
                 _ => {
                     exprs.push(Err(ParserError::UnexpectedToken));
