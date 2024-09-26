@@ -1,16 +1,19 @@
+mod expression;
 mod lexer;
+mod parser;
 mod token;
 
 use std::fs;
 use std::process::ExitCode;
 
-use clap::Parser;
+use clap::Parser as ClapParser;
 use clap::Subcommand;
 use lexer::AnalisisError;
+use parser::Parser;
 
 use crate::lexer::Lexer;
 
-#[derive(Parser)]
+#[derive(ClapParser)]
 #[command(version, about, long_about = None)]
 struct Args {
     #[command(subcommand)]
@@ -56,8 +59,21 @@ fn main() -> ExitCode {
                 }
             }
         }
-        Commands::Parse { filename: _ } => {
-            todo!();
+        Commands::Parse { filename } => {
+            let file_contents = fs::read_to_string(&filename).unwrap_or_else(|_| {
+                eprintln!("Failed to read file {}", filename);
+                String::new()
+            });
+
+            let mut parser = Parser {
+                tokens: Lexer::new(&file_contents).filter_map(Result::ok).collect(),
+            };
+
+            for expr in parser.parse().iter() {
+                if let Ok(expr) = expr {
+                    println!("{expr}");
+                }
+            }
         }
     };
 
