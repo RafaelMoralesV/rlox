@@ -50,6 +50,7 @@ pub enum TokenType {
     EndOfFile,
 }
 
+#[derive(Clone)]
 pub struct Token<'a> {
     pub token_type: TokenType,
     pub lexeme: &'a str,
@@ -59,6 +60,7 @@ pub struct Token<'a> {
     line: usize,
 }
 
+#[derive(Clone)]
 pub enum Literal<'a> {
     Null,
     String(&'a str),

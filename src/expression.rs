@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::token::{Token, TokenType};
 
+#[derive(Clone)]
 pub enum Expr<'a> {
     Literal(&'a Token<'a>),
     Unary {

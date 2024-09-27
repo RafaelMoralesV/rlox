@@ -65,9 +65,8 @@ fn main() -> ExitCode {
                 String::new()
             });
 
-            let mut parser = Parser {
-                tokens: Lexer::new(&file_contents).filter_map(Result::ok).collect(),
-            };
+            let mut parser =
+                Parser::new(Lexer::new(&file_contents).filter_map(Result::ok).collect());
 
             for expr in parser.parse().iter() {
                 if let Ok(expr) = expr {
