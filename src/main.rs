@@ -1,6 +1,6 @@
 mod expr;
-mod lexer;
 mod parser;
+mod scan;
 mod token;
 
 use std::fs;
@@ -9,9 +9,7 @@ use std::process::ExitCode;
 use crate::parser::parser::Parser;
 use clap::Parser as ClapParser;
 use clap::Subcommand;
-use lexer::AnalisisError;
-
-use crate::lexer::Lexer;
+use scan::lexer::Lexer;
 
 #[derive(ClapParser)]
 #[command(version, about, long_about = None)]
@@ -47,14 +45,7 @@ fn main() -> ExitCode {
                     Ok(token) => println!("{token}"),
                     Err(e) => {
                         errors_found = true;
-                        match e {
-                            AnalisisError::UnrecognizedCharacter(line, c) => {
-                                eprintln!("[line {line}] Error: Unexpected character: {c}")
-                            }
-                            AnalisisError::UnterminatedString(line) => {
-                                eprintln!("[line {line}] Error: Unterminated string.")
-                            }
-                        }
+                        eprintln!("{e}");
                     }
                 }
             }

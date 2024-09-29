@@ -1,3 +1,4 @@
+use super::{Error, Result};
 use std::collections::HashMap;
 
 use crate::token::{Literal, Token, TokenType};
@@ -39,12 +40,6 @@ impl<'a> Lexer<'a> {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub enum AnalisisError {
-    UnrecognizedCharacter(usize, char),
-    UnterminatedString(usize),
-}
-
 impl<'a> Lexer<'a> {
     fn either(&mut self, target: char, is: TokenType, isnt: TokenType) -> TokenType {
         match self.input.chars().nth(self.index) {
@@ -56,7 +51,7 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    fn string(&mut self, initial_index: usize) -> Option<Result<Token<'a>, AnalisisError>> {
+    fn string(&mut self, initial_index: usize) -> Option<Result<Token<'a>>> {
         loop {
             self.index += 1;
 
@@ -77,7 +72,7 @@ impl<'a> Lexer<'a> {
                 Some(_) => continue,
                 None => {
                     self.index -= 1;
-                    return Some(Err(AnalisisError::UnterminatedString(self.line)));
+                    return Some(Err(Error::UnterminatedString { line: self.line }));
                 }
             };
         }
@@ -142,7 +137,7 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = Result<Token<'a>, AnalisisError>;
+    type Item = Result<Token<'a>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let len = self.input.chars().count();
@@ -191,7 +186,12 @@ impl<'a> Iterator for Lexer<'a> {
                     c if c.is_alphabetic() || c == '_' => {
                         return Some(Ok(self.identifier(initial_index)))
                     }
-                    c => return Some(Err(AnalisisError::UnrecognizedCharacter(self.line, c))),
+                    c => {
+                        return Some(Err(Error::UnrecognizedCharacter {
+                            line: self.line,
+                            which: c,
+                        }))
+                    }
                 };
 
                 let token = Token::new(
