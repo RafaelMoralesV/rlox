@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use crate::{
-    expression::{BinaryOperator, Expr},
+    expr::expression::Expr,
     token::{Literal, Token, TokenType},
 };
 
