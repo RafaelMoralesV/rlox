@@ -50,25 +50,27 @@ pub enum TokenType {
     EndOfFile,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Token<'a> {
     pub token_type: TokenType,
     pub lexeme: &'a str,
-    pub literal: Literal<'a>,
+    pub literal: Literal,
 
     #[allow(dead_code)]
     line: usize,
 }
 
-#[derive(Clone)]
-pub enum Literal<'a> {
+#[derive(Clone, Debug)]
+pub enum Literal {
     Null,
-    String(&'a str),
+    String(String),
     Number(f64),
+    False,
+    True,
 }
 
 impl<'a> Token<'a> {
-    pub fn new(token_type: TokenType, lexeme: &'a str, literal: Literal<'a>, line: usize) -> Self {
+    pub fn new(token_type: TokenType, lexeme: &'a str, literal: Literal, line: usize) -> Self {
         Self {
             token_type,
             lexeme,
@@ -84,12 +86,14 @@ impl Display for Token<'_> {
     }
 }
 
-impl Display for Literal<'_> {
+impl Display for Literal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
             Literal::Null => write!(f, "null"),
             Literal::String(s) => write!(f, "{}", s),
             Literal::Number(n) => write!(f, "{n:?}"),
+            Literal::True => write!(f, "true"),
+            Literal::False => write!(f, "false"),
         }
     }
 }

@@ -1,28 +1,37 @@
 use std::fmt::Display;
 
-use crate::token::{Token, TokenType};
+use crate::token::Literal;
 
-#[derive(Clone)]
-pub enum Expr<'a> {
-    Literal(&'a Token<'a>),
+#[derive(Debug)]
+pub enum Expr {
+    Literal(Literal),
     Unary {
-        operator: Token<'a>,
-        right: Box<Expr<'a>>,
+        operator: UnaryOperator,
+        right: Box<Expr>,
     },
     Binary {
-        operator: Token<'a>,
-        left: Box<Expr<'a>>,
-        right: Box<Expr<'a>>,
+        operator: BinaryOperator,
+        left: Box<Expr>,
+        right: Box<Expr>,
     },
-    Grouping(Vec<Expr<'a>>),
+    Grouping(Box<Expr>),
 }
 
-impl<'a> Display for Expr<'a> {
+#[derive(Debug)]
+pub enum UnaryOperator {}
+
+#[derive(Debug)]
+pub enum BinaryOperator {
+    BangEqual,
+    EqualEqual,
+}
+
+impl Display for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expr::Literal(t) => match t.token_type {
-                TokenType::True | TokenType::False | TokenType::Nil => write!(f, "{}", t.lexeme),
-                _ => write!(f, "{}", t.literal),
+            Expr::Literal(l) => match l {
+                Literal::Null => write!(f, "nil"),
+                _ => write!(f, "{l}"),
             },
             Expr::Unary {
                 operator: _,
@@ -33,7 +42,7 @@ impl<'a> Display for Expr<'a> {
                 left: _,
                 right: _,
             } => todo!(),
-            Expr::Grouping(_) => todo!(),
+            Expr::Grouping(e) => write!(f, "(group {})", *e),
         }
     }
 }

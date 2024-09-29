@@ -65,7 +65,9 @@ impl<'a> Lexer<'a> {
                     return Some(Ok(Token::new(
                         TokenType::String,
                         &self.input[initial_index..self.index],
-                        Literal::String(&self.input[(initial_index + 1)..(self.index - 1)]),
+                        Literal::String(
+                            self.input[(initial_index + 1)..(self.index - 1)].to_string(),
+                        ),
                         self.line,
                     )))
                 }

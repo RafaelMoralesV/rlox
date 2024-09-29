@@ -1,82 +1,152 @@
+use std::collections::VecDeque;
+
 use crate::{
-    expression::Expr,
-    token::{Token, TokenType},
+    expression::{BinaryOperator, Expr},
+    token::{Literal, Token, TokenType},
 };
 
 #[derive(Clone)]
 pub struct Parser<'a> {
-    tokens: Vec<Token<'a>>,
-    index: usize,
+    tokens: VecDeque<Token<'a>>,
 }
 
+#[derive(Debug)]
 pub enum ParserError {
     UnexpectedToken,
+    MissingToken,
 }
 
 impl<'a> Parser<'a> {
     pub fn new(tokens: Vec<Token<'a>>) -> Self {
-        Self { tokens, index: 0 }
+        let mut tokens: VecDeque<_> = tokens.into();
+        if let Some(last) = tokens.pop_back() {
+            // If the last token is EOF, we delete it.
+            if last.token_type != TokenType::EndOfFile {
+                tokens.push_back(last);
+            }
+        }
+
+        Self { tokens }
     }
 
-    pub fn parse(&'a mut self) -> Vec<Result<Expr<'a>, ParserError>> {
+    pub fn parse(&'a mut self) -> Vec<Result<Expr, ParserError>> {
         let mut exprs = Vec::new();
 
-        for token in self.tokens.iter() {
-            use TokenType as TT;
-
-            let expr = match token.token_type {
-                TT::True | TT::False | TT::Nil | TT::Number | TT::String => Expr::Literal(token),
-                TokenType::EndOfFile => return exprs,
-                _ => {
-                    exprs.push(Err(ParserError::UnexpectedToken));
-                    continue;
-                }
-            };
-
-            exprs.push(Ok(expr));
-        }
+        exprs.push(self.expression());
 
         exprs
     }
 
-    fn expression(&'a mut self) -> Expr {
+    fn expression(&mut self) -> Result<Expr, ParserError> {
         self.equality()
     }
 
-    fn equality(&'a mut self) -> Expr {
-        let expr = self.comparison();
+    fn equality(&mut self) -> Result<Expr, ParserError> {
+        let mut expr = self.comparison()?;
 
-        while self.matches(vec![TokenType::BangEqual, TokenType::EqualEqual]) {
-            let operator = unsafe { self.tokens.get_unchecked(self.index - 1).clone() };
+        // Esto tiene que estar mal.
+        while self.matches_type(vec![TokenType::BangEqual, TokenType::EqualEqual]) {
+            let token = self
+                .tokens
+                .pop_front()
+                .expect("This can't be None, we just checked.");
 
-            let right = self.comparison();
+            let operator = match token.token_type {
+                TokenType::BangEqual => BinaryOperator::BangEqual,
+                TokenType::EqualEqual => BinaryOperator::EqualEqual,
+                _ => break,
+            };
+
+            let right = Box::new(self.comparison()?);
 
             expr = Expr::Binary {
                 operator,
                 left: Box::new(expr),
-                right: Box::new(right),
+                right,
             };
         }
 
-        expr
+        Ok(expr)
     }
 
-    fn comparison(&'a mut self) -> Expr {
-        unimplemented!()
-    }
+    fn comparison(&mut self) -> Result<Expr, ParserError> {
+        let expr = self.term()?;
 
-    fn primary(&'a mut self) -> Expr {
-        unimplemented!()
-    }
-
-    fn matches(&mut self, token_types: Vec<TokenType>) -> bool {
-        if let Some(token) = self.tokens.get(self.index) {
-            if token_types.contains(&token.token_type) {
-                self.index += 1;
-                return true;
-            }
+        while self.matches_type(vec![
+            TokenType::Greater,
+            TokenType::GreaterEqual,
+            TokenType::Less,
+            TokenType::LessEqual,
+        ]) {
+            todo!()
         }
 
-        false
+        Ok(expr)
+    }
+
+    fn term(&mut self) -> Result<Expr, ParserError> {
+        let expr = self.factor()?;
+
+        Ok(expr)
+    }
+
+    fn factor(&mut self) -> Result<Expr, ParserError> {
+        let expr = self.unary()?;
+
+        Ok(expr)
+    }
+
+    fn unary(&mut self) -> Result<Expr, ParserError> {
+        self.primary()
+    }
+
+    fn primary(&mut self) -> Result<Expr, ParserError> {
+        let token = self.tokens.pop_front().ok_or(ParserError::MissingToken)?;
+
+        if token.token_type == TokenType::False {
+            return Ok(Expr::Literal(Literal::False));
+        }
+
+        if token.token_type == TokenType::True {
+            return Ok(Expr::Literal(Literal::True));
+        }
+
+        if token.token_type == TokenType::Nil {
+            return Ok(Expr::Literal(Literal::Null));
+        }
+
+        if token.token_type == TokenType::Number || token.token_type == TokenType::String {
+            return Ok(Expr::Literal(token.literal.to_owned()));
+        }
+
+        if token.token_type == TokenType::LeftParenthesis {
+            let expr = Box::new(self.expression()?);
+
+            if self
+                .tokens
+                .pop_front()
+                .ok_or(ParserError::MissingToken)?
+                .token_type
+                != TokenType::RightParenthesis
+            {
+                return Err(ParserError::UnexpectedToken);
+            }
+
+            return Ok(Expr::Grouping(expr));
+        }
+
+        Err(ParserError::MissingToken)
+    }
+
+    fn matches_type(&mut self, types: Vec<TokenType>) -> bool {
+        match self.tokens.pop_front() {
+            None => false,
+            Some(t) => {
+                let answer = types.contains(&t.token_type);
+                self.tokens.push_front(t);
+
+                answer
+            }
+        }
     }
 }
