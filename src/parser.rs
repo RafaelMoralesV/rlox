@@ -46,16 +46,13 @@ impl<'a> Parser<'a> {
 
         // Esto tiene que estar mal.
         while self.matches_type(vec![TokenType::BangEqual, TokenType::EqualEqual]) {
-            let token = self
+            let operator = self
                 .tokens
                 .pop_front()
-                .expect("This can't be None, we just checked.");
-
-            let operator = match token.token_type {
-                TokenType::BangEqual => BinaryOperator::BangEqual,
-                TokenType::EqualEqual => BinaryOperator::EqualEqual,
-                _ => break,
-            };
+                .expect("This can't be None, we just checked.")
+                .token_type
+                .try_into()
+                .expect("This is a valid Token Type");
 
             let right = Box::new(self.comparison()?);
 
@@ -70,7 +67,7 @@ impl<'a> Parser<'a> {
     }
 
     fn comparison(&mut self) -> Result<Expr, ParserError> {
-        let expr = self.term()?;
+        let mut expr = self.term()?;
 
         while self.matches_type(vec![
             TokenType::Greater,
@@ -78,25 +75,88 @@ impl<'a> Parser<'a> {
             TokenType::Less,
             TokenType::LessEqual,
         ]) {
-            todo!()
+            let operator = self
+                .tokens
+                .pop_front()
+                .expect("This can't be None, we just checked.")
+                .token_type
+                .try_into()
+                .expect("This is a valid Token Type");
+
+            let right = Box::new(self.term()?);
+
+            expr = Expr::Binary {
+                operator,
+                left: Box::new(expr),
+                right,
+            }
         }
 
         Ok(expr)
     }
 
     fn term(&mut self) -> Result<Expr, ParserError> {
-        let expr = self.factor()?;
+        let mut expr = self.factor()?;
+
+        while self.matches_type(vec![TokenType::Minus, TokenType::Plus]) {
+            let operator = self
+                .tokens
+                .pop_front()
+                .expect("This can't be None, we just checked.")
+                .token_type
+                .try_into()
+                .expect("This is a valid Token Type");
+
+            let right = Box::new(self.factor()?);
+
+            expr = Expr::Binary {
+                operator,
+                left: Box::new(expr),
+                right,
+            };
+        }
 
         Ok(expr)
     }
 
     fn factor(&mut self) -> Result<Expr, ParserError> {
-        let expr = self.unary()?;
+        let mut expr = self.unary()?;
+
+        while self.matches_type(vec![TokenType::Slash, TokenType::Asterisk]) {
+            let operator = self
+                .tokens
+                .pop_front()
+                .expect("This can't be None, we just checked.")
+                .token_type
+                .try_into()
+                .expect("This is a valid Token Type");
+
+            let right = Box::new(self.unary()?);
+
+            expr = Expr::Binary {
+                operator,
+                left: Box::new(expr),
+                right,
+            };
+        }
 
         Ok(expr)
     }
 
     fn unary(&mut self) -> Result<Expr, ParserError> {
+        if self.matches_type(vec![TokenType::Bang, TokenType::Minus]) {
+            let operator = self
+                .tokens
+                .pop_front()
+                .expect("This can't be None, we just checked.")
+                .token_type
+                .try_into()
+                .expect("This is a valid Token Type");
+
+            let right = Box::new(self.unary()?);
+
+            return Ok(Expr::Unary { operator, right });
+        }
         self.primary()
     }
 
@@ -135,7 +195,7 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Grouping(expr));
         }
 
-        Err(ParserError::MissingToken)
+        Err(ParserError::UnexpectedToken)
     }
 
     fn matches_type(&mut self, types: Vec<TokenType>) -> bool {
