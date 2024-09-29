@@ -5,15 +5,11 @@ use crate::{
     token::{Literal, Token, TokenType},
 };
 
+use super::{Error, Result};
+
 #[derive(Clone)]
 pub struct Parser<'a> {
     tokens: VecDeque<Token<'a>>,
-}
-
-#[derive(Debug)]
-pub enum ParserError {
-    UnexpectedToken,
-    MissingToken,
 }
 
 impl<'a> Parser<'a> {
@@ -29,7 +25,7 @@ impl<'a> Parser<'a> {
         Self { tokens }
     }
 
-    pub fn parse(&'a mut self) -> Vec<Result<Expr, ParserError>> {
+    pub fn parse(&'a mut self) -> Vec<Result<Expr>> {
         let mut exprs = Vec::new();
 
         exprs.push(self.expression());
@@ -37,11 +33,11 @@ impl<'a> Parser<'a> {
         exprs
     }
 
-    fn expression(&mut self) -> Result<Expr, ParserError> {
+    fn expression(&mut self) -> Result<Expr> {
         self.equality()
     }
 
-    fn equality(&mut self) -> Result<Expr, ParserError> {
+    fn equality(&mut self) -> Result<Expr> {
         let mut expr = self.comparison()?;
 
         // Esto tiene que estar mal.
@@ -66,7 +62,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn comparison(&mut self) -> Result<Expr, ParserError> {
+    fn comparison(&mut self) -> Result<Expr> {
         let mut expr = self.term()?;
 
         while self.matches_type(vec![
@@ -95,7 +91,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn term(&mut self) -> Result<Expr, ParserError> {
+    fn term(&mut self) -> Result<Expr> {
         let mut expr = self.factor()?;
 
         while self.matches_type(vec![TokenType::Minus, TokenType::Plus]) {
@@ -119,7 +115,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn factor(&mut self) -> Result<Expr, ParserError> {
+    fn factor(&mut self) -> Result<Expr> {
         let mut expr = self.unary()?;
 
         while self.matches_type(vec![TokenType::Slash, TokenType::Asterisk]) {
@@ -143,7 +139,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn unary(&mut self) -> Result<Expr, ParserError> {
+    fn unary(&mut self) -> Result<Expr> {
         if self.matches_type(vec![TokenType::Bang, TokenType::Minus]) {
             let operator = self
                 .tokens
@@ -160,8 +156,8 @@ impl<'a> Parser<'a> {
         self.primary()
     }
 
-    fn primary(&mut self) -> Result<Expr, ParserError> {
-        let token = self.tokens.pop_front().ok_or(ParserError::MissingToken)?;
+    fn primary(&mut self) -> Result<Expr> {
+        let token = self.tokens.pop_front().ok_or(Error::MissingToken)?;
 
         if token.token_type == TokenType::False {
             return Ok(Expr::Literal(Literal::False));
@@ -185,17 +181,23 @@ impl<'a> Parser<'a> {
             if self
                 .tokens
                 .pop_front()
-                .ok_or(ParserError::MissingToken)?
+                .ok_or(Error::MissingToken)?
                 .token_type
                 != TokenType::RightParenthesis
             {
-                return Err(ParserError::UnexpectedToken);
+                return Err(Error::UnexpectedToken {
+                    line: token.line,
+                    lexeme: token.lexeme.into(),
+                });
             }
 
             return Ok(Expr::Grouping(expr));
         }
 
-        Err(ParserError::UnexpectedToken)
+        Err(Error::UnexpectedToken {
+            line: token.line,
+            lexeme: token.lexeme.into(),
+        })
     }
 
     fn matches_type(&mut self, types: Vec<TokenType>) -> bool {

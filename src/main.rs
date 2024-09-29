@@ -6,10 +6,10 @@ mod token;
 use std::fs;
 use std::process::ExitCode;
 
+use crate::parser::parser::Parser;
 use clap::Parser as ClapParser;
 use clap::Subcommand;
 use lexer::AnalisisError;
-use parser::Parser;
 
 use crate::lexer::Lexer;
 
@@ -69,8 +69,12 @@ fn main() -> ExitCode {
                 Parser::new(Lexer::new(&file_contents).filter_map(Result::ok).collect());
 
             for expr in parser.parse().iter() {
-                if let Ok(expr) = expr {
-                    println!("{expr}");
+                match expr {
+                    Ok(expr) => println!("{expr}"),
+                    Err(e) => {
+                        errors_found = true;
+                        eprintln!("{e}");
+                    }
                 }
             }
         }
