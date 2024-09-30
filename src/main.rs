@@ -82,9 +82,11 @@ fn main() -> ExitCode {
                 Parser::new(Lexer::new(&file_contents).filter_map(Result::ok).collect());
 
             let expr = parser.parse();
-            let expr = eval(expr.unwrap());
 
-            println!("{}", expr.unwrap());
+            match eval(expr.unwrap()) {
+                Ok(expr) => println!("{expr}"),
+                Err(e) => eprintln!("{e}"),
+            }
         }
     };
 

@@ -52,7 +52,14 @@ impl From<Literal> for Value {
 }
 
 fn eval_unary(operator: UnaryOperator, right: Expr) -> Result<Value> {
-    todo!()
+    let value = eval(right)?;
+    match (operator, value) {
+        (UnaryOperator::Bang, Value::Bool(b)) => Ok(Value::Bool(!b)),
+        (UnaryOperator::Bang, Value::Nil) => Ok(Value::Bool(true)),
+        (UnaryOperator::Bang, _) => Ok(Value::Bool(false)),
+        (UnaryOperator::Minus, Value::Number(n)) => Ok(Value::Number(-n)),
+        _ => Err("Combinacion incompatible!".into()),
+    }
 }
 
 fn eval_binary(_operator: BinaryOperator, _left: Expr, _right: Expr) -> Result<Value> {
