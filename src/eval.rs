@@ -62,6 +62,26 @@ fn eval_unary(operator: UnaryOperator, right: Expr) -> Result<Value> {
     }
 }
 
-fn eval_binary(_operator: BinaryOperator, _left: Expr, _right: Expr) -> Result<Value> {
-    todo!()
+fn eval_binary(operator: BinaryOperator, left: Expr, right: Expr) -> Result<Value> {
+    let left = eval(left)?;
+    let right = eval(right)?;
+
+    let (left, right) = match (left, right) {
+        (Value::Number(l), Value::Number(r)) => (l, r),
+        _ => return Err("Me mandaron cualquier wea".into()),
+    };
+
+    match operator {
+        BinaryOperator::Division => Ok(Value::Number(left / right)),
+        BinaryOperator::Multiplication => Ok(Value::Number(left * right)),
+        BinaryOperator::Minus => Ok(Value::Number(left - right)),
+        BinaryOperator::Plus => Ok(Value::Number(left + right)),
+
+        BinaryOperator::BangEqual => todo!(),
+        BinaryOperator::EqualEqual => todo!(),
+        BinaryOperator::Greater => todo!(),
+        BinaryOperator::GreaterEqual => todo!(),
+        BinaryOperator::Less => todo!(),
+        BinaryOperator::LessEqual => todo!(),
+    }
 }
