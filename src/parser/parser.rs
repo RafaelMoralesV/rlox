@@ -156,19 +156,31 @@ impl<'a> Parser<'a> {
         let token = self.tokens.pop_front().ok_or(Error::MissingToken)?;
 
         if token.token_type == TokenType::False {
-            return Ok(Expr::Literal(Literal::False));
+            return Ok(Expr::Literal {
+                literal: Literal::False,
+                line: token.line,
+            });
         }
 
         if token.token_type == TokenType::True {
-            return Ok(Expr::Literal(Literal::True));
+            return Ok(Expr::Literal {
+                literal: Literal::True,
+                line: token.line,
+            });
         }
 
         if token.token_type == TokenType::Nil {
-            return Ok(Expr::Literal(Literal::Null));
+            return Ok(Expr::Literal {
+                literal: Literal::Null,
+                line: token.line,
+            });
         }
 
         if token.token_type == TokenType::Number || token.token_type == TokenType::String {
-            return Ok(Expr::Literal(token.literal.to_owned()));
+            return Ok(Expr::Literal {
+                literal: token.literal.to_owned(),
+                line: token.line,
+            });
         }
 
         if token.token_type == TokenType::LeftParenthesis {

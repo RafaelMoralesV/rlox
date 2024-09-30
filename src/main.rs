@@ -32,10 +32,27 @@ enum Commands {
     Evaluate { filename: String },
 }
 
+enum ProgramState {
+    Success,
+    LexerError,
+    ParserError,
+    RuntimeException,
+}
+
+impl Into<ExitCode> for ProgramState {
+    fn into(self) -> ExitCode {
+        match self {
+            ProgramState::Success => ExitCode::SUCCESS,
+            ProgramState::LexerError | ProgramState::ParserError => ExitCode::from(65),
+            ProgramState::RuntimeException => ExitCode::from(70),
+        }
+    }
+}
+
 fn main() -> ExitCode {
     let args = Args::parse();
 
-    let mut errors_found = false;
+    let mut status = ProgramState::Success;
 
     match args.command {
         Commands::Tokenize { filename } => {
@@ -49,7 +66,7 @@ fn main() -> ExitCode {
                 match token {
                     Ok(token) => println!("{token}"),
                     Err(e) => {
-                        errors_found = true;
+                        status = ProgramState::LexerError;
                         eprintln!("{e}");
                     }
                 }
@@ -67,7 +84,7 @@ fn main() -> ExitCode {
             match parser.parse() {
                 Ok(expr) => println!("{expr}"),
                 Err(e) => {
-                    errors_found = true;
+                    status = ProgramState::ParserError;
                     eprintln!("{e}");
                 }
             }
@@ -85,14 +102,13 @@ fn main() -> ExitCode {
 
             match eval(expr.unwrap()) {
                 Ok(expr) => println!("{expr}"),
-                Err(e) => eprintln!("{e}"),
+                Err(e) => {
+                    status = ProgramState::RuntimeException;
+                    eprintln!("{e}");
+                }
             }
         }
     };
 
-    if errors_found {
-        ExitCode::from(65)
-    } else {
-        ExitCode::SUCCESS
-    }
+    status.into()
 }

@@ -4,9 +4,12 @@ use crate::token::Literal;
 
 use super::{binary::BinaryOperator, unary::UnaryOperator};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Expr {
-    Literal(Literal),
+    Literal {
+        literal: Literal,
+        line: usize,
+    },
     Unary {
         operator: UnaryOperator,
         right: Box<Expr>,
@@ -22,7 +25,10 @@ pub enum Expr {
 impl Display for Expr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expr::Literal(l) => match l {
+            Expr::Literal {
+                literal: l,
+                line: _,
+            } => match l {
                 Literal::Null => write!(f, "nil"),
                 _ => write!(f, "{l}"),
             },

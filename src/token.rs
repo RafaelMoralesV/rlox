@@ -58,7 +58,7 @@ pub struct Token<'a> {
     pub line: usize,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Literal {
     Null,
     String(String),

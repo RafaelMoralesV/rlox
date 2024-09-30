@@ -3,7 +3,7 @@ use std::fmt::Display;
 use super::{Error, Result};
 use crate::token::TokenType;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum BinaryOperator {
     BangEqual,
     EqualEqual,
