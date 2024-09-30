@@ -25,12 +25,8 @@ impl<'a> Parser<'a> {
         Self { tokens }
     }
 
-    pub fn parse(&'a mut self) -> Vec<Result<Expr>> {
-        let mut exprs = Vec::new();
-
-        exprs.push(self.expression());
-
-        exprs
+    pub fn parse(&'a mut self) -> Result<Expr> {
+        self.expression()
     }
 
     fn expression(&mut self) -> Result<Expr> {

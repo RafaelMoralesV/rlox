@@ -1,3 +1,4 @@
+mod eval;
 mod expr;
 mod parser;
 mod scan;
@@ -9,6 +10,7 @@ use std::process::ExitCode;
 use crate::parser::parser::Parser;
 use clap::Parser as ClapParser;
 use clap::Subcommand;
+use eval::eval;
 use scan::lexer::Lexer;
 
 #[derive(ClapParser)]
@@ -25,6 +27,9 @@ enum Commands {
 
     /// Parses the provided Filename into an AST.
     Parse { filename: String },
+
+    /// Evaluates the contents of a file.
+    Evaluate { filename: String },
 }
 
 fn main() -> ExitCode {
@@ -59,15 +64,27 @@ fn main() -> ExitCode {
             let mut parser =
                 Parser::new(Lexer::new(&file_contents).filter_map(Result::ok).collect());
 
-            for expr in parser.parse().iter() {
-                match expr {
-                    Ok(expr) => println!("{expr}"),
-                    Err(e) => {
-                        errors_found = true;
-                        eprintln!("{e}");
-                    }
+            match parser.parse() {
+                Ok(expr) => println!("{expr}"),
+                Err(e) => {
+                    errors_found = true;
+                    eprintln!("{e}");
                 }
             }
+        }
+        Commands::Evaluate { filename } => {
+            let file_contents = fs::read_to_string(&filename).unwrap_or_else(|_| {
+                eprintln!("Failed to read file {}", filename);
+                String::new()
+            });
+
+            let mut parser =
+                Parser::new(Lexer::new(&file_contents).filter_map(Result::ok).collect());
+
+            let expr = parser.parse();
+            let expr = eval(expr.unwrap());
+
+            println!("{}", expr.unwrap());
         }
     };
 
