@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TokenType {
     // Singe Character Tokens
@@ -50,53 +48,7 @@ pub enum TokenType {
     EndOfFile,
 }
 
-#[derive(Clone, Debug)]
-pub struct Token<'a> {
-    pub token_type: TokenType,
-    pub lexeme: &'a str,
-    pub literal: Literal,
-    pub line: usize,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Literal {
-    Null,
-    String(String),
-    Number(f64),
-    False,
-    True,
-}
-
-impl<'a> Token<'a> {
-    pub fn new(token_type: TokenType, lexeme: &'a str, literal: Literal, line: usize) -> Self {
-        Self {
-            token_type,
-            lexeme,
-            literal,
-            line,
-        }
-    }
-}
-
-impl Display for Token<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self.token_type, self.lexeme, self.literal)
-    }
-}
-
-impl Display for Literal {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self {
-            Literal::Null => write!(f, "null"),
-            Literal::String(s) => write!(f, "{}", s),
-            Literal::Number(n) => write!(f, "{n:?}"),
-            Literal::True => write!(f, "true"),
-            Literal::False => write!(f, "false"),
-        }
-    }
-}
-
-impl Display for TokenType {
+impl std::fmt::Display for TokenType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
