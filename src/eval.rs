@@ -66,8 +66,8 @@ fn eval_binary(operator: BinaryOperator, left: Expr, right: Expr) -> Result<Valu
     let left = eval(left)?;
     let right = eval(right)?;
 
-    match (left, right) {
-        (Value::Number(left), Value::Number(right)) => match operator {
+    match (left, right, operator) {
+        (Value::Number(left), Value::Number(right), operator) => match operator {
             BinaryOperator::Division => Ok(Value::Number(left / right)),
             BinaryOperator::Multiplication => Ok(Value::Number(left * right)),
             BinaryOperator::Minus => Ok(Value::Number(left - right)),
@@ -76,12 +76,26 @@ fn eval_binary(operator: BinaryOperator, left: Expr, right: Expr) -> Result<Valu
             BinaryOperator::GreaterEqual => Ok(Value::Bool(left >= right)),
             BinaryOperator::Less => Ok(Value::Bool(left < right)),
             BinaryOperator::LessEqual => Ok(Value::Bool(left <= right)),
-            _ => Err("Cualquier wea!".into()),
+            BinaryOperator::EqualEqual => Ok(Value::Bool(left == right)),
+            BinaryOperator::BangEqual => Ok(Value::Bool(left != right)),
         },
-        (Value::String(left), Value::String(right)) => match operator {
+
+        (Value::String(left), Value::String(right), operator) => match operator {
             BinaryOperator::Plus => Ok(Value::String(format!("{left}{right}"))),
+            BinaryOperator::EqualEqual => Ok(Value::Bool(left == right)),
+            BinaryOperator::BangEqual => Ok(Value::Bool(left != right)),
             _ => Err("Cualquier wea!".into()),
         },
+        (Value::Nil, Value::Nil, BinaryOperator::BangEqual) => Ok(Value::Bool(false)),
+        (Value::Nil, Value::Nil, BinaryOperator::EqualEqual) => Ok(Value::Bool(true)),
+        (Value::Bool(left), Value::Bool(right), BinaryOperator::BangEqual) => {
+            Ok(Value::Bool(left != right))
+        }
+        (Value::Bool(left), Value::Bool(right), BinaryOperator::EqualEqual) => {
+            Ok(Value::Bool(left == right))
+        }
+        (_, _, BinaryOperator::BangEqual) => Ok(Value::Bool(true)),
+        (_, _, BinaryOperator::EqualEqual) => Ok(Value::Bool(false)),
         _ => return Err("Me mandaron cualquier wea".into()),
     }
 }
