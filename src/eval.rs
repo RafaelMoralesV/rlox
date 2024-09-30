@@ -66,22 +66,18 @@ fn eval_binary(operator: BinaryOperator, left: Expr, right: Expr) -> Result<Valu
     let left = eval(left)?;
     let right = eval(right)?;
 
-    let (left, right) = match (left, right) {
-        (Value::Number(l), Value::Number(r)) => (l, r),
+    match (left, right) {
+        (Value::Number(left), Value::Number(right)) => match operator {
+            BinaryOperator::Division => Ok(Value::Number(left / right)),
+            BinaryOperator::Multiplication => Ok(Value::Number(left * right)),
+            BinaryOperator::Minus => Ok(Value::Number(left - right)),
+            BinaryOperator::Plus => Ok(Value::Number(left + right)),
+            _ => Err("Cualquier wea!".into()),
+        },
+        (Value::String(left), Value::String(right)) => match operator {
+            BinaryOperator::Plus => Ok(Value::String(format!("{left}{right}"))),
+            _ => Err("Cualquier wea!".into()),
+        },
         _ => return Err("Me mandaron cualquier wea".into()),
-    };
-
-    match operator {
-        BinaryOperator::Division => Ok(Value::Number(left / right)),
-        BinaryOperator::Multiplication => Ok(Value::Number(left * right)),
-        BinaryOperator::Minus => Ok(Value::Number(left - right)),
-        BinaryOperator::Plus => Ok(Value::Number(left + right)),
-
-        BinaryOperator::BangEqual => todo!(),
-        BinaryOperator::EqualEqual => todo!(),
-        BinaryOperator::Greater => todo!(),
-        BinaryOperator::GreaterEqual => todo!(),
-        BinaryOperator::Less => todo!(),
-        BinaryOperator::LessEqual => todo!(),
     }
 }
