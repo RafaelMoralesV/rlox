@@ -72,6 +72,10 @@ fn eval_binary(operator: BinaryOperator, left: Expr, right: Expr) -> Result<Valu
             BinaryOperator::Multiplication => Ok(Value::Number(left * right)),
             BinaryOperator::Minus => Ok(Value::Number(left - right)),
             BinaryOperator::Plus => Ok(Value::Number(left + right)),
+            BinaryOperator::Greater => Ok(Value::Bool(left > right)),
+            BinaryOperator::GreaterEqual => Ok(Value::Bool(left >= right)),
+            BinaryOperator::Less => Ok(Value::Bool(left < right)),
+            BinaryOperator::LessEqual => Ok(Value::Bool(left <= right)),
             _ => Err("Cualquier wea!".into()),
         },
         (Value::String(left), Value::String(right)) => match operator {
