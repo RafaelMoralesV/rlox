@@ -1,7 +1,7 @@
 use std::fmt::Display;
 
 use super::{Error, Result};
-use crate::token::TokenType;
+use crate::primitives::TokenType;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum UnaryOperator {

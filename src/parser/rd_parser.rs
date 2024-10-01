@@ -2,17 +2,17 @@ use std::collections::VecDeque;
 
 use crate::{
     expr::expression::Expr,
-    token::{Literal, Token, TokenType},
+    primitives::{Literal, Token, TokenType},
 };
 
 use super::{Error, Result};
 
 #[derive(Clone)]
-pub struct Parser<'a> {
+pub struct RecursiveDescentParser<'a> {
     tokens: VecDeque<Token<'a>>,
 }
 
-impl<'a> Parser<'a> {
+impl<'a> RecursiveDescentParser<'a> {
     pub fn new(tokens: Vec<Token<'a>>) -> Self {
         let mut tokens: VecDeque<_> = tokens.into();
         if let Some(last) = tokens.pop_back() {

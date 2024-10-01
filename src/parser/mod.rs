@@ -1,6 +1,8 @@
 use std::fmt::Display;
 
-pub mod parser;
+pub mod rd_parser;
+
+pub use rd_parser::RecursiveDescentParser;
 
 pub type Result<T> = core::result::Result<T, Error>;
 

@@ -1,7 +1,7 @@
 use super::{Error, Result};
 use std::collections::HashMap;
 
-use crate::token::{Literal, Token, TokenType};
+use crate::primitives::{Literal, Token, TokenType};
 
 pub struct Lexer<'a> {
     pub input: &'a str,
@@ -132,7 +132,7 @@ impl<'a> Lexer<'a> {
             .get(slice)
             .unwrap_or(&TokenType::Identifier);
 
-        Token::new(token_type.clone(), slice, Literal::Null, self.line)
+        Token::new(*token_type, slice, Literal::Null, self.line)
     }
 }
 

@@ -1,16 +1,16 @@
-mod eval;
+mod evaluate;
 mod expr;
 mod parser;
+mod primitives;
 mod scan;
-mod token;
 
 use std::fs;
-use std::process::ExitCode;
+use std::process::Termination;
 
-use crate::parser::parser::Parser;
+use crate::parser::RecursiveDescentParser;
 use clap::Parser as ClapParser;
 use clap::Subcommand;
-use eval::eval;
+use evaluate::eval;
 use scan::lexer::Lexer;
 
 #[derive(ClapParser)]
@@ -39,8 +39,10 @@ enum ProgramState {
     RuntimeException,
 }
 
-impl Into<ExitCode> for ProgramState {
-    fn into(self) -> ExitCode {
+impl Termination for ProgramState {
+    fn report(self) -> std::process::ExitCode {
+        use std::process::ExitCode;
+
         match self {
             ProgramState::Success => ExitCode::SUCCESS,
             ProgramState::LexerError | ProgramState::ParserError => ExitCode::from(65),
@@ -49,7 +51,7 @@ impl Into<ExitCode> for ProgramState {
     }
 }
 
-fn main() -> ExitCode {
+fn main() -> ProgramState {
     let args = Args::parse();
 
     let mut status = ProgramState::Success;
@@ -78,8 +80,9 @@ fn main() -> ExitCode {
                 String::new()
             });
 
-            let mut parser =
-                Parser::new(Lexer::new(&file_contents).filter_map(Result::ok).collect());
+            let mut parser = RecursiveDescentParser::new(
+                Lexer::new(&file_contents).filter_map(Result::ok).collect(),
+            );
 
             match parser.parse() {
                 Ok(expr) => println!("{expr}"),
@@ -95,8 +98,9 @@ fn main() -> ExitCode {
                 String::new()
             });
 
-            let mut parser =
-                Parser::new(Lexer::new(&file_contents).filter_map(Result::ok).collect());
+            let mut parser = RecursiveDescentParser::new(
+                Lexer::new(&file_contents).filter_map(Result::ok).collect(),
+            );
 
             let expr = parser.parse();
 
@@ -110,5 +114,5 @@ fn main() -> ExitCode {
         }
     };
 
-    status.into()
+    status
 }

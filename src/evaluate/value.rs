@@ -1,4 +1,4 @@
-use crate::token::Literal;
+use crate::primitives::Literal;
 
 #[derive(PartialEq)]
 pub enum Value {
@@ -23,7 +23,7 @@ impl From<Literal> for Value {
     fn from(lit: Literal) -> Self {
         match lit {
             Literal::Null => Value::Nil,
-            Literal::String(s) => Value::String(s.into()),
+            Literal::String(s) => Value::String(s),
             Literal::Number(n) => Value::Number(n),
             Literal::False => Value::Bool(false),
             Literal::True => Value::Bool(true),

@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::token::Literal;
+use crate::primitives::Literal;
 
 use super::{binary::BinaryOperator, unary::UnaryOperator};
 

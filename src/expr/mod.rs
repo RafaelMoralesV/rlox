@@ -2,7 +2,7 @@ pub mod binary;
 pub mod expression;
 pub mod unary;
 
-use crate::token::TokenType;
+use crate::primitives::TokenType;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
